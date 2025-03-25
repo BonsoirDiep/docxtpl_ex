@@ -4,6 +4,7 @@ fast api docxtpl html, dynamic merge vertical and more
 # cp
 https://github.com/elapouya/python-docx-template
 https://github.com/tsy19900929/docxtpl_dynamic_vertical_merging
+https://github.com/dfop02/html4docx
 
 
 # run
