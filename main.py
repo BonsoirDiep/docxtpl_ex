@@ -11,7 +11,10 @@ from docxtpl import DocxTemplate, RichText
 from docxtpldvm import DVM
 
 # pip install htmldocx
-from htmldocx import HtmlToDocx
+# from htmldocx import HtmlToDocx
+
+# https://github.com/dfop02/html4docx
+from html4docxmixed import HtmlToDocx
 
 app = FastAPI()
 
