@@ -30,7 +30,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
-from html4docx import utils
+from . import utils
 from docx.shared import Pt
 
 # values in inches

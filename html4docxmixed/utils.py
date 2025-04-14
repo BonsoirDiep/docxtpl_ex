@@ -7,7 +7,7 @@ from enum import Enum
 from urllib.parse import urlparse
 from docx.shared import RGBColor, Pt, Cm, Mm, Inches
 
-from html4docx.colors import Color
+from .colors import Color
 
 font_styles = {
     'b': 'bold',
