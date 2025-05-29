@@ -18,7 +18,7 @@ font_styles = {
     's': 'strike',
     'sup': 'superscript',
     'sub': 'subscript',
-    'th': 'bold',
+    # 'th': 'bold',
 }
 
 font_names = {

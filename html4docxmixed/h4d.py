@@ -435,6 +435,15 @@ class HtmlToDocx(HTMLParser):
         # Available Table Styles
         # https://python-docx.readthedocs.io/en/latest/user/styles-understanding.html#table-styles-in-default-template
         self.table = self.doc.add_table(rows, cols)
+        self.table.allow_autofit = True
+        # Set table width to 100% of the page width
+        # tbl = self.table._element
+        # tblPr = tbl.get_or_add_tblPr()
+        # tblW = OxmlElement("w:tblW")
+        # tblW.set("w:w", "100%")  # Set width to 100%
+        # tblW.set("w:type", "pct")  # Use percentage type
+        # tblPr.append(tblW)
+
 
         if self.table_style:
             try:
@@ -443,6 +452,12 @@ class HtmlToDocx(HTMLParser):
                 self.table_style = ' '.join(re.findall(r'[A-Z][^A-Z]*', self.table_style))
             except KeyError as e:
                 raise ValueError(f"Unable to apply style {self.table_style}.") from e
+            
+        self.table.style = 'Table Grid'
+        self.table.autofit = True
+
+        self.table.first_line_indent = Pt(0)
+        # self.table.width = utils.unit_converter('100%')
 
         # Reference:
         # https://python-docx.readthedocs.io/en/latest/api/table.html#cell-objects
@@ -450,7 +465,8 @@ class HtmlToDocx(HTMLParser):
             for cell_col, col in enumerate(self.get_table_columns(row)):
                 cell_html = self.get_cell_html(col)
                 if col.name == 'th':
-                    cell_html = "<b>%s</b>" % cell_html
+                    # cell_html = "<b>%s</b>" % cell_html
+                    pass
 
                 # Get _Cell object from table based on cell_row and cell_col
                 # docx_cell = self.table.cell(cell_row, cell_col)
@@ -473,15 +489,35 @@ class HtmlToDocx(HTMLParser):
                 # if 'width' in cell_styles or 'height' in cell_styles:
                 #     self.table.autofit = False
 
-                self.table.autofit = True
-                self.table.style = 'Table Grid'
+                # self.table.autofit = True
+                # self.table.style = 'Table Grid'
                 # self.table.auto_ident= True
 
                 child_parser = HtmlToDocx()
                 child_parser.copy_settings_from(self)
-                child_parser.add_html_to_cell(cell_html, docx_cell)
+                child_parser.add_html_to_cell('<table_cell_init>'+ cell_html+ '</table_cell_init>', docx_cell)
+                if cell_row > 0:
+                    for paragraph in docx_cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.bold = False
+                if cell_styles is not None:
+                    # if 'width' in cell_styles: cell_styles.pop('width')
+                    if 'height' in cell_styles: cell_styles.pop('height')
+                    if 'padding' in cell_styles: cell_styles.pop('padding')
+                    if 'margin' in cell_styles: cell_styles.pop('margin')
+                    cell_styles.update({'border': '0.2px solid windowtext'})
+                # print(str(cell_html))
+                # print(str(cell_styles))
+
                 child_parser.add_styles_to_table_cell(cell_styles, docx_cell, self.table.rows[cell_row])
                 # child_parser.add_styles_to_run(cell_styles)
+            # cố định header của bảng khi ngắt trang
+            if cell_row== 0:
+                tbl_header = OxmlElement("w:tblHeader")
+                first_row_props = self.table.rows[0]._element.get_or_add_trPr()
+                first_row_props.append(tbl_header)
+            else:
+                pass
 
         if 'style' in current_attrs and self.table:
             style = utils.parse_dict_string(current_attrs['style'])
@@ -564,6 +600,15 @@ class HtmlToDocx(HTMLParser):
             return
         elif tag == 'body':
             return
+        elif tag== 'table_cell_init':
+            self.paragraph = self.doc.add_paragraph()
+            self.paragraph.style = "Normal"
+            try:
+                self.paragraph.paragraph_format.first_line_indent = Pt(0)
+            except:
+                pass
+            return
+
 
         current_attrs = dict(attrs)
 
@@ -585,6 +630,8 @@ class HtmlToDocx(HTMLParser):
         self.tags[tag] = current_attrs
         if tag in ['p', 'pre']:
             self.paragraph = self.doc.add_paragraph()
+            self.paragraph.style = "Normal"
+
 
         elif tag == 'li':
             self.handle_li()
@@ -651,14 +698,19 @@ class HtmlToDocx(HTMLParser):
         # print(current_attrs)
         # print(str(self.paragraph.text))
         # print('###')
-        from docx.oxml import CT_Tc
-        parent = self.paragraph._element.getparent()
-        if isinstance(parent, CT_Tc):
+        try:
             self.paragraph.paragraph_format.first_line_indent = Pt(0)
-            # print("Đoạn văn này nằm trong ô bảng!")
-        # else:
-        #     print("Đoạn văn này không nằm trong ô bảng.")
-        # print('\n')
+        except:
+            pass
+
+        # from docx.oxml import CT_Tc
+        # parent = self.paragraph._element.getparent()
+        # if isinstance(parent, CT_Tc):
+        #     self.paragraph.paragraph_format.first_line_indent = Pt(0)
+        #     # print("Đoạn văn này nằm trong ô bảng!")
+        # # else:
+        # #     print("Đoạn văn này không nằm trong ô bảng.")
+        # # print('\n')
 
     def handle_endtag(self, tag):
         if self.skip:
