@@ -496,10 +496,6 @@ class HtmlToDocx(HTMLParser):
                 child_parser = HtmlToDocx()
                 child_parser.copy_settings_from(self)
                 child_parser.add_html_to_cell('<table_cell_init>'+ cell_html+ '</table_cell_init>', docx_cell)
-                if cell_row > 0:
-                    for paragraph in docx_cell.paragraphs:
-                        for run in paragraph.runs:
-                            run.font.bold = False
                 if cell_styles is not None:
                     # if 'width' in cell_styles: cell_styles.pop('width')
                     if 'height' in cell_styles: cell_styles.pop('height')
@@ -517,7 +513,11 @@ class HtmlToDocx(HTMLParser):
                 first_row_props = self.table.rows[0]._element.get_or_add_trPr()
                 first_row_props.append(tbl_header)
             else:
-                pass
+                # không in đậm các hàng trong bảng
+                for cell in self.table.rows[cell_row].cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.bold = False
 
         if 'style' in current_attrs and self.table:
             style = utils.parse_dict_string(current_attrs['style'])
