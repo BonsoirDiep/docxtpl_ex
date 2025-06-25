@@ -12,6 +12,14 @@ fast api docxtpl html, dynamic merge vertical and more
 uvicorn main:app --reload --port 8000
 ```
 
+# install
+```bash
+pip install uvicorn
+pip install python-multipart
+pip install docxtpl
+pip install fastapi
+```
+
 # test
 ```bash
 curl --request POST \
